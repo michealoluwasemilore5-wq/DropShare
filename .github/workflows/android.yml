@@ -27,14 +27,16 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            cmdline-tools;latest
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
 
-      - name: Install Android SDK packages
+      - name: Accept Android SDK licenses
         run: |
           yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-36" \
-            "build-tools;36.0.0"
 
       - name: Set up Gradle 8.13
         uses: gradle/actions/setup-gradle@v4
@@ -45,7 +47,7 @@ jobs:
         run: |
           java -version
           gradle --version
-          sdkmanager --list_installed | grep -E 'platforms;android-36|build-tools;36.0.0|platform-tools' || true
+          sdkmanager --list_installed | grep -E 'platforms;android-36|build-tools;36.0.0|platform-tools|cmdline-tools' || true
 
       - name: Download bundled gesture model
         run: |
