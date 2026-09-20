@@ -1,5 +1,6 @@
 package com.dropshare.app
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.Icon
@@ -13,6 +14,7 @@ import android.service.quicksettings.TileService
  * where it appears. Tapping it opens DropShare without exposing file data.
  */
 class DropShareTileService : TileService() {
+
     override fun onStartListening() {
         super.onStartListening()
         updateTile()
@@ -20,21 +22,29 @@ class DropShareTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
+
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
-        if (Build.VERSION.SDK_INT >= 34) {
-            val pending = PendingIntent.getActivity(
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val pendingIntent = PendingIntent.getActivity(
                 this,
                 2001,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            startActivityAndCollapse(pending)
+
+            startActivityAndCollapse(pendingIntent)
         } else {
-            @Suppress("DEPRECATION")
-            startActivityAndCollapse(intent)
+            startActivityAndCollapseCompat(intent)
         }
+    }
+
+    @SuppressLint("StartActivityAndCollapseDeprecated")
+    private fun startActivityAndCollapseCompat(intent: Intent) {
+        @Suppress("DEPRECATION")
+        startActivityAndCollapse(intent)
     }
 
     override fun onTileAdded() {
