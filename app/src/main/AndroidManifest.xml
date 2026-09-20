@@ -2,33 +2,44 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+    <!-- Camera access is optional, so devices without a camera can still install the app. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <uses-feature
         android:name="android.hardware.camera.front"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH_SCAN"
         android:minSdkVersion="31"
         android:usesPermissionFlags="neverForLocation" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH_CONNECT"
         android:minSdkVersion="31" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADVERTISE"
         android:minSdkVersion="31" />
+
     <uses-permission
         android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:minSdkVersion="32"
@@ -37,6 +48,7 @@
     <uses-permission
         android:name="android.permission.ACCESS_WIFI_STATE"
         android:maxSdkVersion="31" />
+
     <uses-permission
         android:name="android.permission.CHANGE_WIFI_STATE"
         android:maxSdkVersion="31" />
@@ -45,6 +57,7 @@
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="31" />
+
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
         android:minSdkVersion="29"
@@ -67,6 +80,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -79,6 +93,7 @@
             android:icon="@drawable/ic_qs_dropshare"
             android:label="@string/quick_settings_tile_label"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
