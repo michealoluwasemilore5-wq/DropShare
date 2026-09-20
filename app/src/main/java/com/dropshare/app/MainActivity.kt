@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -50,19 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.android.gms.nearby.Nearby
-import com.google.android.gms.nearby.connection.AdvertisingOptions
-import com.google.android.gms.nearby.connection.ConnectionInfo
-import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
-import com.google.android.gms.nearby.connection.ConnectionResolution
-import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
-import com.google.android.gms.nearby.connection.DiscoveryOptions
-import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
-import com.google.android.gms.nearby.connection.Payload
-import com.google.android.gms.nearby.connection.PayloadCallback
-import com.google.android.gms.nearby.connection.PayloadTransferUpdate
-import com.google.android.gms.nearby.connection.Strategy
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 private data class MediaItem(
     val uri: Uri,
@@ -102,7 +90,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         transfer = DropTransfer(this)
+
         setContent {
             DropShareApp()
         }
@@ -116,23 +106,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun DropShareApp() {
         val context = LocalContext.current
-        val mediaPermissionLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { _ ->
-            val usable = hasUsableMediaPermission(context)
-            if (usable) {
-                refreshMedia()
-            }
-        }
-
-        val nearbyPermissionLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { _ ->
-            val okay = hasNearbyPermissions(context)
-            if (okay) {
-                transfer.start()
-            }
-        }
 
         var media by remember { mutableStateOf<List<MediaItem>>(emptyList()) }
         var selected by remember { mutableStateOf<MediaItem?>(null) }
@@ -142,8 +115,31 @@ class MainActivity : ComponentActivity() {
 
         fun refreshMedia() {
             media = loadMedia(context)
+
             if (selected == null && media.isNotEmpty()) {
                 selected = media.first()
+            }
+        }
+
+        val mediaPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { _: Map<String, Boolean> ->
+            val usable = hasUsableMediaPermission(context)
+            mediaPermissionMissing = !usable
+
+            if (usable) {
+                refreshMedia()
+            }
+        }
+
+        val nearbyPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { _: Map<String, Boolean> ->
+            val okay = hasNearbyPermissions(context)
+            nearbyPermissionMissing = !okay
+
+            if (okay) {
+                transfer.start()
             }
         }
 
@@ -163,12 +159,16 @@ class MainActivity : ComponentActivity() {
                 transfer.start()
             } else {
                 nearbyPermissionMissing = true
-                nearbyPermissionLauncher.launch(nearbyPermissionsForCurrentApi().toTypedArray())
+                nearbyPermissionLauncher.launch(
+                    nearbyPermissionsForCurrentApi().toTypedArray()
+                )
             }
 
             if (!hasUsableMediaPermission(context)) {
                 mediaPermissionMissing = true
-                mediaPermissionLauncher.launch(mediaPermissionsForCurrentApi().toTypedArray())
+                mediaPermissionLauncher.launch(
+                    mediaPermissionsForCurrentApi().toTypedArray()
+                )
             } else {
                 mediaPermissionMissing = false
                 refreshMedia()
@@ -203,10 +203,15 @@ class MainActivity : ComponentActivity() {
                             TextButton(
                                 onClick = {
                                     if (nearbyPermissionMissing) {
-                                        nearbyPermissionLauncher.launch(nearbyPermissionsForCurrentApi().toTypedArray())
+                                        nearbyPermissionLauncher.launch(
+                                            nearbyPermissionsForCurrentApi().toTypedArray()
+                                        )
                                     }
+
                                     if (mediaPermissionMissing) {
-                                        mediaPermissionLauncher.launch(mediaPermissionsForCurrentApi().toTypedArray())
+                                        mediaPermissionLauncher.launch(
+                                            mediaPermissionsForCurrentApi().toTypedArray()
+                                        )
                                     }
                                 }
                             ) {
@@ -233,7 +238,9 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(180.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -273,9 +280,15 @@ class MainActivity : ComponentActivity() {
                                             text = item.name,
                                             maxLines = 2
                                         )
+
                                         Spacer(modifier = Modifier.size(8.dp))
+
                                         Text(
-                                            text = if (item.isVideo) "Video" else "Image",
+                                            text = if (item.isVideo) {
+                                                "Video"
+                                            } else {
+                                                "Image"
+                                            },
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -301,14 +314,20 @@ class MainActivity : ComponentActivity() {
 
                     Button(
                         onClick = {
-                            if (selected != null) {
+                            val selectedItem = selected
+
+                            if (selectedItem != null) {
                                 Toast.makeText(
                                     context,
-                                    "Selected: ${selected!!.name}",
+                                    "Selected: ${selectedItem.name}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                Toast.makeText(context, "No item selected", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "No item selected",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -335,7 +354,10 @@ class MainActivity : ComponentActivity() {
 
     private fun hasNearbyPermissions(context: Context): Boolean =
         nearbyPermissionsForCurrentApi().all { permission ->
-            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
         }
 
     private fun mediaPermissionsForCurrentApi(): List<String> =
@@ -352,17 +374,17 @@ class MainActivity : ComponentActivity() {
 
     private fun hasUsableMediaPermission(context: Context): Boolean =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val images = ContextCompat.checkSelfPermission(
+            val imagesGranted = ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_MEDIA_IMAGES
             ) == PackageManager.PERMISSION_GRANTED
 
-            val videos = ContextCompat.checkSelfPermission(
+            val videosGranted = ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_MEDIA_VIDEO
             ) == PackageManager.PERMISSION_GRANTED
 
-            images || videos
+            imagesGranted || videosGranted
         } else {
             ContextCompat.checkSelfPermission(
                 context,
@@ -389,16 +411,25 @@ class MainActivity : ComponentActivity() {
                 null,
                 "${MediaStore.MediaColumns.DATE_ADDED} DESC"
             )?.use { cursor ->
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
-                val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-                val mimeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
-                val dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED)
+                val idColumn = cursor.getColumnIndexOrThrow(
+                    MediaStore.MediaColumns._ID
+                )
+                val nameColumn = cursor.getColumnIndexOrThrow(
+                    MediaStore.MediaColumns.DISPLAY_NAME
+                )
+                val mimeColumn = cursor.getColumnIndexOrThrow(
+                    MediaStore.MediaColumns.MIME_TYPE
+                )
+                val dateAddedColumn = cursor.getColumnIndexOrThrow(
+                    MediaStore.MediaColumns.DATE_ADDED
+                )
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
                     val uri = ContentUris.withAppendedId(collection, id)
                     val name = cursor.getString(nameColumn) ?: "Untitled"
-                    val mime = cursor.getString(mimeColumn) ?: "application/octet-stream"
+                    val mime = cursor.getString(mimeColumn)
+                        ?: "application/octet-stream"
                     val dateAdded = cursor.getLong(dateAddedColumn)
 
                     result += MediaItem(
@@ -412,8 +443,15 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        loadCollection(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, isVideo = false)
-        loadCollection(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, isVideo = true)
+        loadCollection(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            isVideo = false
+        )
+
+        loadCollection(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            isVideo = true
+        )
 
         return result.sortedByDescending { it.dateAdded }
     }
