@@ -1,0 +1,21 @@
+# Gradle
+.gradle/
+build/
+*/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CI-generated signing material
+ci-keystore.jks
+# Downloaded MediaPipe model (CI downloads it before APK build)
+app/src/main/assets/gesture_recognizer.task

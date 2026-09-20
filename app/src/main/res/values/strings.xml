@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">DropShare</string>
+    <string name="app_tagline">Air Grab &amp; Drop</string>
+    <string name="quick_settings_tile_label">DropShare</string>
+    <string name="quick_settings_tile_description">Open DropShare Air Grab &amp; Drop</string>
+</resources>

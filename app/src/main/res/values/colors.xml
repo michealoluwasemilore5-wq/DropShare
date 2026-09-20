@@ -1,0 +1,9 @@
+<resources>
+    <color name="dropshare_primary">#3F51FF</color>
+    <color name="dropshare_primary_dark">#2838C7</color>
+    <color name="dropshare_secondary">#00A98F</color>
+    <color name="dropshare_background">#F7F8FC</color>
+    <color name="dropshare_surface">#FFFFFF</color>
+    <color name="dropshare_on_primary">#FFFFFF</color>
+    <color name="dropshare_splash_background">#F7F8FC</color>
+</resources>
