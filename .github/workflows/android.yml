@@ -13,6 +13,7 @@ jobs:
   build:
     name: Validate and build APKs
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout source
@@ -28,11 +29,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            cmdline-tools;latest
-            platform-tools
-            platforms;android-36
-            build-tools;36.0.0
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
 
       - name: Accept Android SDK licenses
         run: |
@@ -43,11 +40,14 @@ jobs:
         with:
           gradle-version: "8.13"
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       - name: Verify toolchain
         run: |
           java -version
-          gradle --version
-          sdkmanager --list_installed | grep -E 'platforms;android-36|build-tools;36.0.0|platform-tools|cmdline-tools' || true
+          ./gradlew --version
+          sdkmanager --list_installed | grep -E 'platforms;android-36|build-tools;36.0.0|platform-tools' || true
 
       - name: Download bundled gesture model
         run: |
@@ -58,16 +58,16 @@ jobs:
           test "$(wc -c < app/src/main/assets/gesture_recognizer.task)" -gt 1000000
 
       - name: Validate Gradle project
-        run: gradle --no-daemon --stacktrace :app:tasks --all >/dev/null
+        run: ./gradlew --no-daemon --stacktrace :app:tasks --all >/dev/null
 
       - name: Run unit tests
-        run: gradle --no-daemon --stacktrace testDebugUnitTest
+        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
 
       - name: Run Android lint
-        run: gradle --no-daemon --stacktrace lintDebug
+        run: ./gradlew --no-daemon --stacktrace lintDebug
 
       - name: Build debug APK
-        run: gradle --no-daemon --stacktrace assembleDebug
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
 
       - name: Create temporary CI signing key
         run: |
@@ -84,7 +84,7 @@ jobs:
 
       - name: Build installable CI release APK
         run: |
-          gradle --no-daemon --stacktrace assembleRelease \
+          ./gradlew --no-daemon --stacktrace assembleRelease \
             -PciStoreFile="$GITHUB_WORKSPACE/ci-keystore.jks" \
             -PciStorePassword=dropshare-ci \
             -PciKeyAlias=dropshare \
